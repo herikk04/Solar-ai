@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <section id="hero" class="hero">
+        <div class="hero-content">
+            <h1>Inspeção Solar Automatizada</h1>
+            <h2>Detecção de falhas térmicas e segmentação de painéis com IA.</h2>
+            <a href="#objetivo" class="cta-btn">Ver Projeto</a>
+        </div>
+    </section>
+
+    <section id="objetivo">
+        <h2 class="section-title">Nosso <span>Objetivo</span></h2>
+        <div class="features-grid">
+            <div class="card">
+                <div class="card-icon">✂️</div>
+                <h3>Segmentação (YOLOv8)</h3>
+                <p>Recorta digitalmente cada painel, isolando do fundo e corrigindo a rotação.</p>
+            </div>
+            <div class="card">
+                <div class="card-icon">🌡️</div>
+                <h3>Classificação Térmica</h3>
+                <p>Identifica hotspots e defeitos analisando anomalias na imagem térmica.</p>
+            </div>
+            <div class="card">
+                <div class="card-icon">☁️</div>
+                <h3>Escalabilidade Cloud</h3>
+                <p>Processamento distribuído via Dataflow para milhares de imagens simultâneas.</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="tecnologia" style="background-color: #0b0b0b;">
+        <h2 class="section-title">Pipeline <span>ETL</span></h2>
+        <div class="pipeline-container">
+            <div class="step"><h4>Storage (GCS)</h4><p>Imagens Brutas e JSON </p></div>
+            <div class="arrow">➜</div>
+            <div class="step"><h4>Dataflow</h4><p>Processamento Apache Beam </p></div>
+            <div class="arrow">➜</div>
+            <div class="step"><h4>Vertex AI</h4><p>Modelo YOLOv8 Servido </p></div>
+            <div class="arrow">➜</div>
+            <div class="step"><h4>BigQuery</h4><p>Análise Final </p></div>
+        </div>
+    </section>
+
+    <section id="equipe">
+        <h2 class="section-title">Quem faz <span>Acontecer</span></h2>
+        <div class="team-grid">
+            <div class="member">
+                <img src="https://media.licdn.com/dms/image/v2/D4D03AQEnTcWNPeKsfg/profile-displayphoto-shrink_800_800/profile-displayphoto-shrink_800_800/0/1725300426955?e=1766016000&v=beta&t=wjlC-3G23BLzTJnGuWkZ45kLoQ8GKxoFhy57VOuna8Q" class="member-photo">
+                <h3>Herik KAuan de Assis</h3>
+                <a href="https://www.linkedin.com/in/herikk04/">Linkedin</a>
+            </div>
+             <div class="member">
+                <img src="https://media.licdn.com/dms/image/v2/D4D03AQGw61DFzsxeaQ/profile-displayphoto-shrink_800_800/profile-displayphoto-shrink_800_800/0/1726135999582?e=1766016000&v=beta&t=oSPJIN3zxxON3RDEDGlQgLWUtdFsQMmrqgnF6VyaCQg" class="member-photo">
+                <h3>Carlos Rocha</h3>
+                <a href="https://www.linkedin.com/in/carlosedurochas/">Linkedin</a>
+            </div>
+             <div class="member">
+                <img src="https://media.licdn.com/dms/image/v2/D4D03AQGAeV9odh6wgQ/profile-displayphoto-shrink_800_800/profile-displayphoto-shrink_800_800/0/1706125675094?e=1766016000&v=beta&t=ngQYKZR9jF0xbN1bEHHNwp113mqtd1jVTAlteJDYVJ8" class="member-photo">
+                <h3>Rafael Batista</h3>
+                 <a href="https://www.linkedin.com/in/rafael-batista-de-oliveira-067067222/">Linkedin</a>
+            </div>
+             <div class="member">
+                <img src="https://media.licdn.com/dms/image/v2/D4D03AQHXt7RoYVMciQ/profile-displayphoto-crop_800_800/B4DZgfLQJPGsAI-/0/1752869701986?e=1766016000&v=beta&t=9Gpe4j19XaQhwYpTjR9UIU2vB2IdeAmJMDIw1AIPb6I" class="member-photo">
+                <h3>DAVI PEREIRA CARVALHO</h3>
+                <a href="https://www.linkedin.com/in/davi-pereira-carvalho-708977346/">Linkedin</a>
+            </div>
+             <div class="member">
+                <img src="https://media.licdn.com/dms/image/v2/D4D03AQErujjVjvLiBQ/profile-displayphoto-shrink_800_800/profile-displayphoto-shrink_800_800/0/1730756031048?e=1766016000&v=beta&t=zKlZXzU60-kxcdSjlvjZhD4V3d_Am6Rkot0YZ00ZjqQ" class="member-photo">
+                <h3>Pedro Reis</h3>
+                <a href="https://www.linkedin.com/in/pedro-reis-7505172a3/">Linkedin</a>
+            </div>
+        </div>
+    </section>
+{% endblock %}

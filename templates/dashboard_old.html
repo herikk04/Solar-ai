@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="refresh" content="60"> 
+    <title>Solar.AI | Analytics Command</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    
+    <style>
+        :root {
+            --bg-dark: #050505;
+            --card-surface: #121212;
+            --card-border: #222;
+            --primary-neon: #9D00FF;
+            --danger-neon: #FF3366; /* Vermelho */
+            --success-neon: #00E676; /* Verde */
+            --text-main: #FFFFFF;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; text-decoration: none; }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* HEADER */
+        header {
+            background: rgba(18, 18, 18, 0.9);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            height: 70px;
+            padding: 0 30px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .logo-link { display: flex; align-items: center; gap: 10px; color: #fff; font-weight: 700; font-size: 1.2rem; }
+        .logo-link span { color: var(--primary-neon); }
+        .user-controls { display: flex; gap: 15px; align-items: center; }
+        .user-avatar { width: 32px; height: 32px; background: var(--primary-neon); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+        .btn-logout { color: var(--danger-neon); border: 1px solid var(--danger-neon); padding: 5px 15px; border-radius: 5px; font-size: 0.8rem; transition: 0.3s; }
+        .btn-logout:hover { background: var(--danger-neon); color: white; }
+
+        /* DASHBOARD GRID */
+        .dashboard-content {
+            flex: 1;
+            padding: 20px;
+            display: grid;
+            gap: 20px;
+            grid-template-columns: 3fr 1fr;
+            grid-template-rows: 120px 1fr; 
+            height: calc(100vh - 70px);
+        }
+
+        .glass-card {
+            background: var(--card-surface);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            position: relative;
+            display: flex; flex-direction: column;
+            overflow: hidden;
+        }
+
+        .card-total {
+            grid-column: 1 / 2;
+            background: linear-gradient(90deg, #1a0b2e 0%, #050505 100%);
+            flex-direction: row; align-items: center; justify-content: space-between; padding: 0 40px;
+            border: 1px solid rgba(157, 0, 255, 0.3);
+        }
+        .total-value { font-size: 3rem; font-weight: 700; }
+        .total-icon { font-size: 2.5rem; opacity: 0.5; }
+
+        .card-analytics {
+            grid-column: 1 / 2;
+            grid-row: 2 / 3;
+            min-height: 400px;
+            position: relative;
+        }
+        
+        #map { width: 100%; height: 100%; background: #000; z-index: 1; }
+
+        .sidebar { grid-column: 2 / 3; grid-row: 1 / 3; display: flex; flex-direction: column; gap: 20px; }
+        .stat-card { flex: 1; align-items: center; justify-content: center; text-align: center; padding: 20px; }
+        
+        .donut { width: 100px; height: 100px; border-radius: 50%; position: relative; display: flex; align-items: center; justify-content: center; margin-bottom: 15px; }
+        .donut::before { content: ''; position: absolute; width: 80px; height: 80px; background: var(--card-surface); border-radius: 50%; z-index: 2; }
+        .donut-value { position: relative; z-index: 3; font-size: 1.5rem; font-weight: 700; }
+        
+        /* CORES INVERTIDAS NOS GRÁFICOS */
+        /* Defeito agora usa a cor VERDE (Success) */
+        .donut-defect { background: conic-gradient(var(--success-neon) 0% 75%, #222 75% 100%); }
+        /* Normal agora usa a cor VERMELHA (Danger) */
+        .donut-success { background: conic-gradient(var(--danger-neon) 0% 90%, #222 90% 100%); }
+
+        @media (max-width: 1000px) {
+            .dashboard-content { grid-template-columns: 1fr; grid-template-rows: auto; overflow-y: auto; }
+            .card-analytics { height: 500px; }
+            .sidebar { flex-direction: row; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <a href="{{ url_for('home') }}" class="logo-link">☀️ SOLAR.<span>AI</span></a>
+        <div class="user-controls">
+            <div class="user-avatar">AD</div>
+            <a href="{{ url_for('logout') }}" class="btn-logout">SAIR</a>
+        </div>
+    </header>
+
+    <div class="dashboard-content">
+        <div class="glass-card card-total">
+            <div>
+                <h3 style="color:var(--primary-neon); font-size: 0.8rem; letter-spacing: 1px;">MONITORAMENTO</h3>
+                <div class="total-value">{{ data.total }}</div>
+                <div style="color: #666; font-size: 0.8rem;">Painéis Identificados</div>
+            </div>
+            <div class="total-icon">⚡</div>
+        </div>
+
+        <div class="glass-card card-analytics">
+            <div id="map"></div>
+        </div>
+
+        <div class="sidebar">
+            
+            <div class="glass-card stat-card" style="border-top: 2px solid var(--success-neon);">
+                <div class="donut donut-defect"><div class="donut-value">{{ data.defeitos }}</div></div>
+                <div style="color: var(--success-neon); font-weight: bold;">CRÍTICOS</div>
+            </div>
+
+            <div class="glass-card stat-card" style="border-top: 2px solid var(--danger-neon);">
+                <div class="donut donut-success"><div class="donut-value">{{ data.sem_defeito }}</div></div>
+                <div style="color: var(--danger-neon); font-weight: bold;">OPERACIONAIS</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        const geoJsonData = {{ data.mapa | tojson }};
+
+        const map = L.map('map', {
+            zoomControl: true,
+            maxZoom: 25
+        }).setView([-11.226, -41.580], 18);
+
+        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+            attribution: 'Tiles &copy; Esri',
+            maxNativeZoom: 17,
+            maxZoom: 25
+        }).addTo(map);
+
+        let geoJsonLayer;
+        if (geoJsonData && geoJsonData.features && geoJsonData.features.length > 0) {
+            geoJsonLayer = L.geoJSON(geoJsonData, {
+                style: function(feature) {
+                    const status = feature.properties.status;
+                    
+                    // --- AQUI ESTÁ A INVERSÃO DAS CORES ---
+                    // Se o status for 'Defeito', usa VERDE (#00E676)
+                    // Se for qualquer outra coisa, usa VERMELHO (#FF3366)
+                    
+                    const corInvertida = (status === 'Defeito') ? '#00E676' : '#FF3366';
+
+                    return {
+                        color: corInvertida, 
+                        weight: 2, 
+                        fillColor: corInvertida, 
+                        fillOpacity: 0.6 
+                    };
+                },
+                onEachFeature: function(feature, layer) {
+                    layer.bindPopup(`
+                        <div style="text-align:center; color: #333;">
+                            <strong>PAINEL #${feature.properties.id || 'N/A'}</strong><br>
+                            Status Original: <b>${feature.properties.status}</b>
+                        </div>
+                    `);
+                }
+            }).addTo(map);
+        }
+
+        setTimeout(function(){ 
+            map.invalidateSize(); 
+            if (geoJsonLayer) {
+                map.fitBounds(geoJsonLayer.getBounds(), { padding: [20, 20], maxZoom: 22 });
+            }
+        }, 500);
+    </script>
+</body>
+</html>

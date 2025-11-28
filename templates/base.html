@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Solar AI Project{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+    <header>
+        <div class="logo">☀️<span>SOLAR.AI</span></div>
+        <nav>
+            <ul>
+                <li><a href="{{ url_for('home') }}#hero">Home</a></li>
+                <li><a href="{{ url_for('home') }}#objetivo">Objetivo</a></li>
+                <li><a href="{{ url_for('home') }}#tecnologia">Tecnologia</a></li>
+            </ul>
+        </nav>
+        <a href="{{ url_for('login') }}" class="btn-login">LOGIN</a>
+    </header>
+
+    {% block content %}{% endblock %}
+
+    <footer>
+        <p>&copy; 2025 Projeto Inspeção Solar - UFG. Feito com Flask e Google Cloud.</p>
+    </footer>
+
+</body>
+</html>

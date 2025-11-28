@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block title %}Login - Solar AI{% endblock %}
+
+{% block content %}
+<section style="height: 100vh; display: flex; align-items: center; justify-content: center; background: #050505;">
+    <div class="card" style="width: 100%; max-width: 400px; text-align: center; background: #121212; border: 1px solid #333; padding: 40px; border-radius: 15px;">
+        
+        <h2 style="margin-bottom: 20px; color: #fff;">Acesso Restrito</h2>
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div style="background: rgba(255, 0, 85, 0.2); border: 1px solid #ff0055; color: #ff0055; padding: 10px; margin-bottom: 20px; border-radius: 5px; font-size: 0.9rem;">
+                {{ message }}
+              </div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+
+        <p style="margin-bottom: 30px; color: #a0a0a0; font-size: 0.9rem;">Entre com suas credenciais de administrador.</p>
+        
+        <form method="POST" action="{{ url_for('login') }}">
+            <input type="text" name="username" placeholder="Usuário" required 
+                   style="width: 100%; padding: 12px; margin-bottom: 15px; background: #222; border: 1px solid #444; color: white; border-radius: 5px; outline: none;">
+            
+            <input type="password" name="password" placeholder="Senha" required 
+                   style="width: 100%; padding: 12px; margin-bottom: 25px; background: #222; border: 1px solid #444; color: white; border-radius: 5px; outline: none;">
+            
+            <button type="submit" class="cta-btn" 
+                    style="width: 100%; border: none; cursor: pointer; background: #9D00FF; color: white; padding: 12px; font-weight: bold; border-radius: 5px; transition: 0.3s;">
+                ENTRAR NO SISTEMA
+            </button>
+        </form>
+
+        <p style="margin-top: 20px; font-size: 0.8rem; color: #555;">
+            <a href="{{ url_for('home') }}" style="color: #666; text-decoration: none;">← Voltar para o site</a>
+        </p>
+    </div>
+</section>
+{% endblock %}
