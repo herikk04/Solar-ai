@@ -1,46 +1,58 @@
 import os
-import json 
+import json
 from flask import Flask, render_template, redirect, url_for, request, session, flash
 from google.cloud import bigquery
 from google.oauth2 import service_account
 
 app = Flask(__name__)
-
-# --- CONFIGURAÇÕES DE SEGURANÇA ---
-# Secret Key é necessária para usar sessões (cookies seguros)
 app.secret_key = 'PALMEIRAS' 
 
+# CREDENCIAIS
 USUARIO_ADMIN = "admin"
 SENHA_ADMIN = "solar123"
-
 CREDENTIALS_FILE = 'credentials.json'
 
-def get_solar_data():
+def get_solar_data(tabela_alvo):
     try:
         if not os.path.exists(CREDENTIALS_FILE):
             return {"total": 0, "defeitos": 0, "sem_defeito": 0, "mapa": None}
 
         credentials = service_account.Credentials.from_service_account_file(CREDENTIALS_FILE)
-        project_id = "deteccao-paineis-solares" 
+        
+        # --- CONFIGURAÇÃO FIXA (NÃO MUDA) ---
+        project_id = "deteccao-paineis-solares"  # <--- COLOQUE SEU ID AQUI
+        dataset_id = "solar_analysis"        # <--- COLOQUE SEU DATASET AQUI
+        
         client = bigquery.Client(credentials=credentials, project=project_id)
 
-        # 1. Totais (Mantém igual)
+        # --- A MÁGICA DA TROCA DE TABELA ---
+        # Se na URL vier ?source=aula, usa a tabela da aula.
+        # Caso contrário, usa a tabela completa.
+        if tabela_alvo == 'aula':
+            nome_tabela = "panels_segmented_aula"
+            nome_exibicao = "VERSÃO AULA"
+        else:
+            nome_tabela = "panels_segmented_all"
+            nome_exibicao = "PROJETO COMPLETO"
+
+        # 1. Query Totais
         query_totais = f"""
             SELECT
                 COUNT(DISTINCT panel_id) as total_paineis,
                 COUNT(DISTINCT CASE WHEN status = 'Defeito' THEN panel_id END) as com_defeito
-            FROM `deteccao-paineis-solares.solar_analysis.panels_segmented_aula`
+            FROM `{project_id}.{dataset_id}.{nome_tabela}`
         """
         job_totais = client.query(query_totais)
         res_totais = list(job_totais.result())[0]
         
-        # 2. Mapa - AQUI MUDOU: Adicionei 'panel_id' no SELECT
+        # 2. Query Mapa (GeoJSON)
+        # Trazendo o ID para mostrar no popup
         query_mapa = f"""
             SELECT 
-                panel_id, 
+                panel_id,
                 ST_ASGEOJSON(panel_shape) as geometry, 
                 status 
-            FROM `deteccao-paineis-solares.solar_analysis.panels_segmented_aula`
+            FROM `{project_id}.{dataset_id}.{nome_tabela}`
             WHERE panel_shape IS NOT NULL
             LIMIT 1000 
         """
@@ -50,26 +62,23 @@ def get_solar_data():
         features = []
         for row in job_mapa.result():
             geom = json.loads(row.geometry) 
-            
             features.append({
                 "type": "Feature",
                 "geometry": geom,
-                "properties": {
-                    "id": row.panel_id, # <--- Agora estamos enviando o ID real!
-                    "status": row.status
+                "properties": { 
+                    "id": row.panel_id,
+                    "status": row.status 
                 }
             })
 
-        geojson_data = {
-            "type": "FeatureCollection",
-            "features": features
-        }
+        geojson_data = { "type": "FeatureCollection", "features": features }
 
         return {
             "total": res_totais.total_paineis, 
             "defeitos": res_totais.com_defeito, 
             "sem_defeito": res_totais.total_paineis - res_totais.com_defeito,
-            "mapa": geojson_data
+            "mapa": geojson_data,
+            "nome_exibicao": nome_exibicao # Manda o nome bonito pro HTML
         }
             
     except Exception as e:
@@ -84,7 +93,6 @@ def home():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    # Se já estiver logado, manda pro dashboard direto
     if 'usuario_logado' in session:
         return redirect(url_for('dashboard'))
 
@@ -107,12 +115,15 @@ def logout():
 
 @app.route('/dashboard')
 def dashboard():
-    
     if 'usuario_logado' not in session:
         return redirect(url_for('login'))
     
-    data = get_solar_data()
-    return render_template('dashboard.html', data=data)
+    # Verifica qual botão foi clicado (padrao ou aula)
+    source = request.args.get('source', 'padrao')
+    
+    data = get_solar_data(source)
+    
+    return render_template('dashboard.html', data=data, current_source=source)
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8080))

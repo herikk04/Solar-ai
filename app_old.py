@@ -1,10 +1,13 @@
 import os
+import json 
 from flask import Flask, render_template, redirect, url_for, request, session, flash
 from google.cloud import bigquery
 from google.oauth2 import service_account
 
 app = Flask(__name__)
 
+# --- CONFIGURAÇÕES DE SEGURANÇA ---
+# Secret Key é necessária para usar sessões (cookies seguros)
 app.secret_key = 'PALMEIRAS' 
 
 USUARIO_ADMIN = "admin"
@@ -15,33 +18,63 @@ CREDENTIALS_FILE = 'credentials.json'
 def get_solar_data():
     try:
         if not os.path.exists(CREDENTIALS_FILE):
-            
-            return {"total": 0, "defeitos": 0, "sem_defeito": 0}
+            return {"total": 0, "defeitos": 0, "sem_defeito": 0, "mapa": None}
 
         credentials = service_account.Credentials.from_service_account_file(CREDENTIALS_FILE)
-        project_id = "deteccao-paineis-solares" # 
+        project_id = "deteccao-paineis-solares" 
         client = bigquery.Client(credentials=credentials, project=project_id)
 
-        query = """
+        # 1. Totais (Mantém igual)
+        query_totais = f"""
             SELECT
                 COUNT(DISTINCT panel_id) as total_paineis,
                 COUNT(DISTINCT CASE WHEN status = 'Defeito' THEN panel_id END) as com_defeito
-            FROM `deteccao-paineis-solares.solar_analysis.panels_segmented`
+            FROM `deteccao-paineis-solares.solar_analysis.panels_segmented_aula`
+        """
+        job_totais = client.query(query_totais)
+        res_totais = list(job_totais.result())[0]
+        
+        # 2. Mapa - AQUI MUDOU: Adicionei 'panel_id' no SELECT
+        query_mapa = f"""
+            SELECT 
+                panel_id, 
+                ST_ASGEOJSON(panel_shape) as geometry, 
+                status 
+            FROM `deteccao-paineis-solares.solar_analysis.panels_segmented_aula`
+            WHERE panel_shape IS NOT NULL
+            LIMIT 1000 
         """
         
-        query_job = client.query(query)
-        results = query_job.result()
+        job_mapa = client.query(query_mapa)
         
-        for row in results:
-            total = row.total_paineis
-            defeitos = row.com_defeito
-            sem_defeito = total - defeitos
-            #lembrar que tem q inverter os nomes dps pra ficar certo
-            return {"total": total, "defeitos": defeitos, "sem_defeito": sem_defeito}
+        features = []
+        for row in job_mapa.result():
+            geom = json.loads(row.geometry) 
+            
+            features.append({
+                "type": "Feature",
+                "geometry": geom,
+                "properties": {
+                    "id": row.panel_id, # <--- Agora estamos enviando o ID real!
+                    "status": row.status
+                }
+            })
+
+        geojson_data = {
+            "type": "FeatureCollection",
+            "features": features
+        }
+
+        return {
+            "total": res_totais.total_paineis, 
+            "defeitos": res_totais.com_defeito, 
+            "sem_defeito": res_totais.total_paineis - res_totais.com_defeito,
+            "mapa": geojson_data
+        }
             
     except Exception as e:
         print(f"Erro: {e}")
-        return {"total": 0, "defeitos": 0, "sem_defeito": 0}
+        return {"total": 0, "defeitos": 0, "sem_defeito": 0, "mapa": None}
 
 # --- ROTAS ---
 

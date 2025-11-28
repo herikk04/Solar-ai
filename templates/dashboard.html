@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
     
     <style>
+        /* CSS IGUAL AO ANTERIOR */
         :root {
             --bg-dark: #050505;
             --card-surface: #121212;
@@ -18,104 +19,59 @@
             --success-neon: #00E676;
             --text-main: #FFFFFF;
         }
-
         * { margin: 0; padding: 0; box-sizing: border-box; text-decoration: none; }
+        body { background-color: var(--bg-dark); color: var(--text-main); font-family: 'Inter', sans-serif; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
 
-        body {
-            background-color: var(--bg-dark);
-            color: var(--text-main);
-            font-family: 'Inter', sans-serif;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-
-        /* HEADER */
-        header {
-            background: rgba(18, 18, 18, 0.9);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            height: 70px;
-            padding: 0 30px;
-            display: flex; justify-content: space-between; align-items: center;
-        }
+        header { background: rgba(18, 18, 18, 0.9); border-bottom: 1px solid rgba(255, 255, 255, 0.1); height: 70px; padding: 0 30px; display: flex; justify-content: space-between; align-items: center; }
         .logo-link { display: flex; align-items: center; gap: 10px; color: #fff; font-weight: 700; font-size: 1.2rem; }
         .logo-link span { color: var(--primary-neon); }
+
+        /* SWITCH DE TABELA */
+        .db-switch { background: #222; border-radius: 20px; display: flex; padding: 3px; border: 1px solid #333; }
+        .db-option { padding: 5px 15px; border-radius: 15px; font-size: 0.8rem; font-weight: 600; cursor: pointer; color: #888; transition: 0.3s; }
+        .db-option.active { background: var(--primary-neon); color: white; box-shadow: 0 0 10px rgba(157, 0, 255, 0.4); }
+        .db-option:hover:not(.active) { color: white; }
+
         .user-controls { display: flex; gap: 15px; align-items: center; }
         .user-avatar { width: 32px; height: 32px; background: var(--primary-neon); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; }
         .btn-logout { color: var(--danger-neon); border: 1px solid var(--danger-neon); padding: 5px 15px; border-radius: 5px; font-size: 0.8rem; transition: 0.3s; }
         .btn-logout:hover { background: var(--danger-neon); color: white; }
 
-        /* GRID */
-        .dashboard-content {
-            flex: 1;
-            padding: 20px;
-            display: grid;
-            gap: 20px;
-            grid-template-columns: 3fr 1fr;
-            grid-template-rows: 120px 1fr; 
-            height: calc(100vh - 70px);
-        }
-
-        .glass-card {
-            background: var(--card-surface);
-            border: 1px solid var(--card-border);
-            border-radius: 12px;
-            position: relative;
-            display: flex; flex-direction: column;
-            overflow: hidden;
-        }
-
-        .card-total {
-            grid-column: 1 / 2;
-            background: linear-gradient(90deg, #1a0b2e 0%, #050505 100%);
-            flex-direction: row; align-items: center; justify-content: space-between; padding: 0 40px;
-            border: 1px solid rgba(157, 0, 255, 0.3);
-        }
+        .dashboard-content { flex: 1; padding: 20px; display: grid; gap: 20px; grid-template-columns: 3fr 1fr; grid-template-rows: 120px 1fr; height: calc(100vh - 70px); }
+        .glass-card { background: var(--card-surface); border: 1px solid var(--card-border); border-radius: 12px; position: relative; display: flex; flex-direction: column; overflow: hidden; }
+        .card-total { grid-column: 1 / 2; background: linear-gradient(90deg, #1a0b2e 0%, #050505 100%); flex-direction: row; align-items: center; justify-content: space-between; padding: 0 40px; border: 1px solid rgba(157, 0, 255, 0.3); }
         .total-value { font-size: 3rem; font-weight: 700; }
         .total-icon { font-size: 2.5rem; opacity: 0.5; }
-
-        .card-analytics {
-            grid-column: 1 / 2;
-            grid-row: 2 / 3;
-            min-height: 400px;
-            position: relative;
-        }
-        
+        .card-analytics { grid-column: 1 / 2; grid-row: 2 / 3; min-height: 400px; position: relative; }
         #map { width: 100%; height: 100%; background: #000; z-index: 1; }
-
         .sidebar { grid-column: 2 / 3; grid-row: 1 / 3; display: flex; flex-direction: column; gap: 20px; }
         .stat-card { flex: 1; align-items: center; justify-content: center; text-align: center; padding: 20px; }
-        
-        /* Donuts e Cores Padrão */
         .donut { width: 100px; height: 100px; border-radius: 50%; position: relative; display: flex; align-items: center; justify-content: center; margin-bottom: 15px; }
         .donut::before { content: ''; position: absolute; width: 80px; height: 80px; background: var(--card-surface); border-radius: 50%; z-index: 2; }
         .donut-value { position: relative; z-index: 3; font-size: 1.5rem; font-weight: 700; }
-        
-        /* Se precisar inverter os donuts, você edita aqui no CSS msm */
         .donut-defect { background: conic-gradient(var(--danger-neon) 0% 75%, #222 75% 100%); }
         .donut-success { background: conic-gradient(var(--success-neon) 0% 90%, #222 90% 100%); }
-
-        /* Botão Reset Mapa */
-        .btn-reset-map {
-            background: white; border: 2px solid rgba(0,0,0,0.2); border-radius: 4px;
-            width: 30px; height: 30px; cursor: pointer;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 1.2rem; color: #333; font-weight: bold;
-        }
+        .btn-reset-map { background: white; border: 2px solid rgba(0,0,0,0.2); border-radius: 4px; width: 30px; height: 30px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: #333; font-weight: bold; }
         .btn-reset-map:hover { background: #f4f4f4; }
-
-        @media (max-width: 1000px) {
-            .dashboard-content { grid-template-columns: 1fr; grid-template-rows: auto; overflow-y: auto; }
-            .card-analytics { height: 500px; }
-            .sidebar { flex-direction: row; }
-        }
+        @media (max-width: 1000px) { .dashboard-content { grid-template-columns: 1fr; grid-template-rows: auto; overflow-y: auto; } .card-analytics { height: 500px; } .sidebar { flex-direction: row; } }
     </style>
 </head>
 <body>
 
     <header>
         <a href="{{ url_for('home') }}" class="logo-link">☀️ SOLAR.<span>AI</span></a>
+
+        <div class="db-switch">
+            <a href="{{ url_for('dashboard', source='padrao') }}" 
+               class="db-option {{ 'active' if current_source == 'padrao' else '' }}">
+               PROJETO
+            </a>
+            <a href="{{ url_for('dashboard', source='aula') }}" 
+               class="db-option {{ 'active' if current_source == 'aula' else '' }}">
+               AULA
+            </a>
+        </div>
+
         <div class="user-controls">
             <div class="user-avatar">AD</div>
             <a href="{{ url_for('logout') }}" class="btn-logout">SAIR</a>
@@ -125,7 +81,9 @@
     <div class="dashboard-content">
         <div class="glass-card card-total">
             <div>
-                <h3 style="color:var(--primary-neon); font-size: 0.8rem; letter-spacing: 1px;">MONITORAMENTO</h3>
+                <h3 style="color:var(--primary-neon); font-size: 0.8rem; letter-spacing: 1px; text-transform: uppercase;">
+                    TABELA: {{ data.nome_exibicao }}
+                </h3>
                 <div class="total-value">{{ data.total }}</div>
                 <div style="color: #666; font-size: 0.8rem;">Painéis Identificados</div>
             </div>
@@ -150,93 +108,62 @@
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        // ==========================================
-        // ⚙️ CONTROLE EXCLUSIVO DO MAPA
-        // ==========================================
-        
-        // true  = "Defeito" fica Verde (Invertido)
-        // false = "Defeito" fica Vermelho (Padrão)
+        // --- CONFIGURAÇÃO ---
         const DADOS_INVERTIDOS = true; 
-
-        // ==========================================
-
+        const VERDE = '#00E676';
+        const VERMELHO = '#FF3366';
+        
         const geoJsonData = {{ data.mapa | tojson }};
-
-        // 1. Inicia Mapa
         const map = L.map('map', { zoomControl: true, maxZoom: 25 }).setView([-11.226, -41.580], 18);
 
-        // 2. Tile Híbrido (Google)
         L.tileLayer('http://{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', {
-            maxZoom: 25,
-            maxNativeZoom: 20, 
-            subdomains:['mt0','mt1','mt2','mt3']
+            maxZoom: 25, maxNativeZoom: 20, subdomains:['mt0','mt1','mt2','mt3']
         }).addTo(map);
 
-        // 3. Botão Reset
         const ResetControl = L.Control.extend({
             options: { position: 'topleft' },
             onAdd: function(map) {
-                const container = L.DomUtil.create('div', 'leaflet-bar leaflet-control');
-                const button = L.DomUtil.create('a', 'btn-reset-map', container);
-                button.innerHTML = '⟲';
-                button.href = "#";
-                button.onclick = function(e) {
+                const c = L.DomUtil.create('div', 'leaflet-bar leaflet-control');
+                const b = L.DomUtil.create('a', 'btn-reset-map', c);
+                b.innerHTML = '⟲'; b.href = "#";
+                b.onclick = function(e) {
                     e.preventDefault();
                     if (geoJsonLayer) map.fitBounds(geoJsonLayer.getBounds(), { padding: [20, 20], maxZoom: 22 });
                     return false;
                 };
-                return container;
+                return c;
             }
         });
         map.addControl(new ResetControl());
 
-        // 4. Lógica do Mapa (Afetada pelo DADOS_INVERTIDOS)
-        const VERDE = '#00E676';
-        const VERMELHO = '#FF3366';
         let geoJsonLayer;
-
         if (geoJsonData && geoJsonData.features && geoJsonData.features.length > 0) {
             geoJsonLayer = L.geoJSON(geoJsonData, {
                 style: function(feature) {
                     const statusApi = feature.properties.status;
-                    let corFinal;
-
-                    if (DADOS_INVERTIDOS) {
-                        // Invertido: Defeito = Verde
-                        corFinal = (statusApi === 'Defeito') ? VERDE : VERMELHO;
-                    } else {
-                        // Padrão: Defeito = Vermelho
-                        corFinal = (statusApi === 'Defeito') ? VERMELHO : VERDE;
-                    }
-
-                    return { color: corFinal, weight: 2, fillColor: corFinal, fillOpacity: 0.6 };
+                    let cor = DADOS_INVERTIDOS 
+                        ? (statusApi === 'Defeito' ? VERDE : VERMELHO) 
+                        : (statusApi === 'Defeito' ? VERMELHO : VERDE);
+                    return { color: cor, weight: 2, fillColor: cor, fillOpacity: 0.6 };
                 },
                 onEachFeature: function(feature, layer) {
                     const statusApi = feature.properties.status;
-                    const idReal = feature.properties.id;
-                    let textoStatus, corTexto;
+                    const idReal = feature.properties.id || "N/A";
+                    let texto, corTxt;
 
-                    // Define Texto e Cor do POPUP baseado na inversão
                     if (DADOS_INVERTIDOS) {
-                         if (statusApi === 'Defeito') {
-                             textoStatus = "OPERACIONAL"; corTexto = VERDE;
-                         } else {
-                             textoStatus = "DEFEITO TÉRMICO"; corTexto = VERMELHO;
-                         }
+                         if (statusApi === 'Defeito') { texto = "OPERACIONAL"; corTxt = VERDE; } 
+                         else { texto = "DEFEITO TÉRMICO"; corTxt = VERMELHO; }
                     } else {
-                         if (statusApi === 'Defeito') {
-                             textoStatus = "DEFEITO TÉRMICO"; corTexto = VERMELHO;
-                         } else {
-                             textoStatus = "OPERACIONAL"; corTexto = VERDE;
-                         }
+                         if (statusApi === 'Defeito') { texto = "DEFEITO TÉRMICO"; corTxt = VERMELHO; } 
+                         else { texto = "OPERACIONAL"; corTxt = VERDE; }
                     }
 
-                    const nomePainel = idReal ? idReal : "Painel Não Indexado";
                     layer.bindPopup(`
                         <div style="text-align:center; font-family: 'Inter', sans-serif; color: #333; min-width: 150px;">
-                            <strong style="font-size: 0.9rem;">${nomePainel}</strong>
+                            <strong style="font-size: 0.9rem;">${idReal}</strong>
                             <hr style="margin: 5px 0; border: 0; border-top: 1px solid #ddd;">
-                            <b style="color:${corTexto}; font-size: 1rem;">${textoStatus}</b>
+                            <b style="color:${corTxt}; font-size: 1rem;">${texto}</b>
                         </div>
                     `);
                 }
@@ -247,7 +174,6 @@
             map.invalidateSize(); 
             if (geoJsonLayer) map.fitBounds(geoJsonLayer.getBounds(), { padding: [20, 20], maxZoom: 22 });
         }, 500);
-
     </script>
 </body>
 </html>
