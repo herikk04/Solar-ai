@@ -1,0 +1,21 @@
+# Usamos PyTorch com CUDA 11.8 (Extremamente estável para Tesla P100)
+FROM pytorch/pytorch:2.1.2-cuda11.8-cudnn8-runtime
+
+WORKDIR /app
+
+# 1. Instala libs do Linux para OpenCV
+RUN apt-get update && apt-get install -y \
+    libgl1 \
+    libglib2.0-0 \
+    && rm -rf /var/lib/apt/lists/*
+
+# 2. O "Pulo do Gato": Removemos o numpy conflitante do Conda
+# e forçamos a reinstalação limpa de tudo via PIP.
+RUN pip uninstall -y numpy && \
+    pip install --no-cache-dir flask opencv-python-headless ultralytics
+
+# Copia seus arquivos
+COPY . .
+
+# Comando de execução
+CMD ["python", "app.py"]
