@@ -97,9 +97,9 @@ O projeto está dividido em três módulos principais:
 
 ---
 
-<!--## Status do projeto
+## Status do projeto
 
- TODO: descreva aqui se o pipeline está rodando em produção, é um protótipo/POC, ou um projeto de estudo. Isso muda muito como quem visita interpreta o repositório. -->
+Este projeto foi desenvolvido como trabalho final de uma disciplina do curso de Inteligência Artificial na UFG. O pipeline esteve provisionado e em execução na GCP durante o período do trabalho — ingestão, processamento via Dataflow, inferência no Vertex AI e dashboard consultando o BigQuery funcionaram de ponta a ponta. Os recursos de cloud não estão mais ativos hoje (não há custo de infraestrutura sendo mantido fora do período do curso), mas o código e a arquitetura aqui refletem uma implementação que rodou de fato, não um protótipo teórico.
 
 Como este projeto depende de recursos provisionados na GCP (bucket no Cloud Storage, job no Dataflow, endpoint no Vertex AI, dataset no BigQuery), não há um único comando de "rodar localmente" — cada módulo é implantado separadamente:
 
@@ -113,4 +113,4 @@ Como este projeto depende de recursos provisionados na GCP (bucket no Cloud Stor
 
 ## Licença
 
- MIT
+<!-- TODO: adicionar licença, se aplicável (ex: MIT) -->
